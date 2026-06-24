@@ -94,12 +94,13 @@
 <script setup>
 import { ref, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { apiPut } from '../../api.js'
+import { defineEmits } from 'vue'
 
 const props = defineProps({
   task: { type: Object, required: true },
 })
 
-const emit = defineEmits(['update', 'edit', 'delete'])
+const emit = defineEmits(['update-task', 'edit', 'delete'])
 
 // === Меню троеточия ===
 const showMenu = ref(false)
@@ -156,7 +157,7 @@ async function saveDescription() {
     const updated = await apiPut(`/api/kanban-tasks/${props.task._id}`, {
       description: editedDescription.value,
     })
-    emit('update', updated)
+    emit('update-task', updated)
     isEditingDescription.value = false
   } catch (err) {
     console.error('Save failed:', err)

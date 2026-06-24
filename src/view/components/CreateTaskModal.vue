@@ -98,7 +98,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted, watch, computed } from 'vue'
 import { apiGet } from '../../api.js'
 
 const props = defineProps({

@@ -204,38 +204,6 @@ async function handleTaskSubmit(taskData) {
   }
 }
 
-// const handleTaskSubmit = async (taskData) => {
-//   try {
-//     const statusMap = {
-//       'Not Started': 'not-started',
-//       'In Progress': 'in-progress',
-//       'Under Review': 'under-review',
-//       'Completed': 'completed',
-//     }
-
-//     const payload = {
-//       title: taskData.title,
-//       description: taskData.description,
-//       priority: taskData.priority,
-//       dueDate: taskData.dueDate,
-//       status: statusMap[taskData.category] || 'not-started',
-//       assignees: taskData.assignees,   // массив ObjectId
-//     }
-
-//     const savedTask = await apiPost('/api/kanban-tasks', payload)
-
-//     const col = columns.value.find(c => c.id === savedTask.status)
-//     if (col) {
-//       col.tasks.push(savedTask)
-//       col.count++
-//     }
-
-//     showTaskModal.value = false
-//   } catch (err) {
-//     alert('Ошибка создания задачи: ' + err.message)
-//   }
-// }
-
 function handleTaskUpdate(updatedTask) {
   for (const col of columns.value) {
     const index = col.tasks.findIndex((t) => t._id === updatedTask._id)

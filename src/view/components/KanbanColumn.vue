@@ -14,8 +14,9 @@
     </div>
     <TaskCard
       v-for="(task, index) in column.tasks"
-      :key="index"
+      :key="task._id || index"
       :task="task"
+      @update-task="(updated) => $emit('update-task', updated)"
       @edit="(t) => $emit('edit-task', { columnId: column.id, task: t })"
       @delete="(t) => $emit('delete-task', { columnId: column.id, task: t })"
     />
@@ -30,8 +31,7 @@ const props = defineProps({
   column: { type: Object, required: true }
 })
 
-const emit = defineEmits(['edit-column', 'delete-column', 'edit-task', 'delete-task'])
-
+const emit = defineEmits(['edit-column', 'delete-column', 'edit-task', 'delete-task', 'update-task'])
 const showMenu = ref(false)
 const menuRef = ref(null)
 
