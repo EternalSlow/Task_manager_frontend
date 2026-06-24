@@ -14,19 +14,24 @@
       <div class="content">
         <FoldersGrid :folders="folders" @add-folder="handleAddFolder" />
         <ViewControls @create-task="showTaskModal = true" />
-        <KanbanBoard
-          :columns="columns"
-          @update-task="handleTaskUpdate"
-        />
+          <KanbanBoard
+            :columns="columns"
+            @edit-column="handleEditColumn"
+            @delete-column="handleDeleteColumn"
+            @edit-task="handleEditTask"
+            @delete-task="handleDeleteTask"
+          /> 
       </div>
     </main>
 
     <CreateTaskModal
       v-if="showTaskModal"
+      :task="editingTask"
       @close="showTaskModal = false"
       @submit="handleTaskSubmit"
       :columns="columns"
     />
+
   </div>
 </template>
 
@@ -37,10 +42,23 @@ import TopHeader from './components/TopHeader.vue'
 import ViewControls from './components/ViewControls.vue'
 import KanbanBoard from './components/KanbanBoard.vue'
 import CreateTaskModal from './components/CreateTaskModal.vue'
-import { apiPost, apiGet } from '../api.js'
+import { apiGet, apiPost, apiPut, apiDelete } from '../api.js'
 import { onMounted } from 'vue'
 
 const showTaskModal = ref(false)
+const currentUser = ref(null)
+const editingTask = ref(null)
+
+function openCreateModal() {
+  editingTask.value = null
+  showTaskModal.value = true
+}
+
+function handleEditTask({ columnId, task }) {
+  editingTask.value = task
+  showTaskModal.value = true
+}
+
 
 const columns = ref([
   {
@@ -79,10 +97,12 @@ const loadError = ref('')
 onMounted(async () => {
   isLoading.value = true
   loadError.value = ''
+  const profile = await apiGet('/api/profile')
+  currentUser.value = profile.user
 
   try {
 
-    const tasks = await apiGet('/api/kanban-tasks')
+    const tasks = await apiGet(`/api/kanban-tasks?assigneeId=${profile.user.id}`)
 
     for (const col of columns.value) {
       col.tasks = tasks.filter((t) => t.status === col.id)
@@ -111,53 +131,110 @@ const handleCreateTask = () => {
   showTaskModal.value = true
 }
 
-const handleEditTask = ({ columnId, task }) => {
-  alert(`Edit task: ${task.title}`)
-}
-
 const closeTaskModal = () => {
   showTaskModal.value = false
 }
 
-const handleDeleteTask = ({ columnId, task }) => {
-  if (confirm(`Delete task "${task.title}"?`)) {
-    const col = columns.value.find(c => c.id === columnId)
-    if (col) {
-      const taskIndex = col.tasks.findIndex(t => t.title === task.title) // лучше использовать id
-      if (taskIndex !== -1) {
-        col.tasks.splice(taskIndex, 1)
-        col.count--
-      }
+const handleDeleteTask = async ({ columnId, task }) => {
+  if (!confirm(`Delete task "${task.title}"?`)) return
+
+  if (task._id) {
+    try {
+      await apiDelete(`/api/kanban-tasks/${task._id}`)
+    } catch (err) {
+      alert('Ошибка удаления: ' + err.message)
+      return
+    }
+  }
+
+  const col = columns.value.find(c => c.id === columnId)
+  if (col) {
+    const taskIndex = col.tasks.findIndex(t => t._id === task._id)
+    if (taskIndex !== -1) {
+      col.tasks.splice(taskIndex, 1)
+      col.count--
     }
   }
 }
 
-const handleTaskSubmit = async (taskData) => {
+async function handleTaskSubmit(taskData) {
   try {
+    const statusMap = {
+      'Not Started': 'not-started',
+      'In Progress': 'in-progress',
+      'Under Review': 'under-review',
+      'Completed': 'completed',
+    }
+
     const payload = {
       title: taskData.title,
-      description: taskData.description || '',        // <-- это и есть “заметка”
-      priority: taskData.priority.toLowerCase(),      // low/medium/high
-      progress: 0,
-      total: 5,
-      dueDate: taskData.dueDate || '',
-      status: 'not-started',
-      assignees: taskData.assignees || [],
-      comments: 0,
-      attachments: 0,
-    };
+      description: taskData.description,
+      priority: taskData.priority.toLowerCase(),
+      dueDate: taskData.dueDate,
+      status: statusMap[taskData.category] || 'not-started',
+      assignees: (taskData.assignees || []).filter(Boolean),
+    }
 
-    const saved = await apiPost('/api/kanban-tasks', payload);
+    let savedTask
 
-    columns.value[0].tasks.push(saved);
-    columns.value[0].count++;
+    if (taskData.isEditing && taskData._id) {
+      savedTask = await apiPut(`/api/kanban-tasks/${taskData._id}`, payload)
 
-    showTaskModal.value = false;
-  } catch (e) {
-    console.error(e);
-    alert('Не удалось сохранить задачу/заметку: ' + e.message);
+      for (const col of columns.value) {
+        const idx = col.tasks.findIndex(t => t._id === taskData._id)
+        if (idx !== -1) {
+          col.tasks.splice(idx, 1)
+          col.count--
+        }
+      }
+    } else {
+      savedTask = await apiPost('/api/kanban-tasks', payload)
+    }
+
+    const targetCol = columns.value.find(c => c.id === savedTask.status)
+    if (targetCol) {
+      targetCol.tasks.push(savedTask)
+      targetCol.count++
+    }
+
+    showTaskModal.value = false
+    editingTask.value = null
+  } catch (err) {
+    alert('Ошибка: ' + err.message)
   }
-};
+}
+
+// const handleTaskSubmit = async (taskData) => {
+//   try {
+//     const statusMap = {
+//       'Not Started': 'not-started',
+//       'In Progress': 'in-progress',
+//       'Under Review': 'under-review',
+//       'Completed': 'completed',
+//     }
+
+//     const payload = {
+//       title: taskData.title,
+//       description: taskData.description,
+//       priority: taskData.priority,
+//       dueDate: taskData.dueDate,
+//       status: statusMap[taskData.category] || 'not-started',
+//       assignees: taskData.assignees,   // массив ObjectId
+//     }
+
+//     const savedTask = await apiPost('/api/kanban-tasks', payload)
+
+//     const col = columns.value.find(c => c.id === savedTask.status)
+//     if (col) {
+//       col.tasks.push(savedTask)
+//       col.count++
+//     }
+
+//     showTaskModal.value = false
+//   } catch (err) {
+//     alert('Ошибка создания задачи: ' + err.message)
+//   }
+// }
 
 function handleTaskUpdate(updatedTask) {
   for (const col of columns.value) {

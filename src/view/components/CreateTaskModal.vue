@@ -1,445 +1,427 @@
 <template>
-  <div class="modal-overlay" @click="closeModal">
-    <div class="modal-container" @click.stop>
+  <div class="modal-overlay" @click.self="close">
+    <div class="modal-content">
+      <!-- Шапка с крестиком -->
       <div class="modal-header">
-        <div>
-          <h2 class="modal-title">Create New Task</h2>
-          <p class="modal-subtitle">Fill out the details below to add a new task to your board.</p>
-        </div>
-        <button class="modal-close" @click="closeModal">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
+        <h2 class="text-xl font-bold text-gray-900">{{ modalTitle }}</h2>
+        <button class="close-btn" @click="close">✕</button>
       </div>
 
-      <div class="modal-body">
-        <div class="form-section">
-          <h3 class="section-title">
-            <span class="section-icon bg-orange">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="16" y1="13" x2="8" y2="13"></line>
-                <line x1="16" y1="17" x2="8" y2="17"></line>
-                <polyline points="10 9 9 9 8 9"></polyline>
-              </svg>
-            </span>
-            General Information
-          </h3>
-          
-          <div class="form-group">
-            <label class="form-label">Task Title</label>
-            <input 
-              type="text" 
-              class="form-input" 
-              placeholder="e.g., Redesign Landing Page" 
-              v-model="form.title" 
-            />
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label">Description</label>
-            <textarea 
-              class="form-input textarea" 
-              placeholder="Provide details about this task..." 
-              v-model="form.description"
-            ></textarea>
+      <form @submit.prevent="handleSubmit" class="modal-body">
+        <!-- Заголовок задачи -->
+        <div class="form-group">
+          <label class="form-label">Task Title *</label>
+          <input
+            v-model="form.title"
+            type="text"
+            class="form-input"
+            placeholder="Enter task title"
+            required
+          />
+        </div>
+
+        <!-- Описание -->
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea
+            v-model="form.description"
+            class="form-input"
+            rows="3"
+            placeholder="Enter task description"
+          ></textarea>
+        </div>
+
+        <!-- Категория (статус) -->
+        <div class="form-group">
+          <label class="form-label">Category *</label>
+          <select v-model="form.category" class="form-input" required>
+            <option value="" disabled>Select category</option>
+            <option v-for="cat in categories" :key="cat" :value="cat">
+              {{ cat }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Приоритет -->
+        <div class="form-group">
+          <label class="form-label">Priority</label>
+          <div class="priority-buttons">
+            <button
+              v-for="priority in priorities"
+              :key="priority"
+              type="button"
+              :class="['priority-btn', priority, { active: form.priority === priority }]"
+              @click="form.priority = priority"
+            >
+              {{ priority }}
+            </button>
           </div>
         </div>
 
-        <div class="form-section">
-          <h3 class="section-title">
-            <span class="section-icon bg-blue">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-              </svg>
-            </span>
-            Task Properties
-          </h3>
-          
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Category</label>
-              <select class="form-input" v-model="form.category">
-                <option 
-                  v-for="col in columns" 
-                  :key="col.id" 
-                  :value="col.title"
-                >
-                  {{ col.title }}
-                </option>
-              </select>
-            </div>
-            
-            <div class="form-group">
-              <label class="form-label">Priority</label>
-              <div class="priority-group">
-                <button 
-                  v-for="priority in priorities" 
-                  :key="priority" 
-                  :class="['priority-btn', { active: form.priority === priority }]" 
-                  @click="form.priority = priority"
-                >
-                  {{ priority }}
-                </button>
+        <!-- Срок выполнения -->
+        <div class="form-group">
+          <label class="form-label">Due Date</label>
+          <input
+            v-model="form.dueDate"
+            type="date"
+            class="form-input"
+          />
+        </div>
+
+        <!-- Назначенные пользователи -->
+        <div class="form-group">
+          <label class="form-label">Assignees</label>
+          <div class="assignees-list">
+            <div
+              v-for="user in users"
+              :key="user._id"
+              :class="['assignee-item', { selected: form.assignees.includes(user._id) }]"
+              @click="toggleAssignee(user._id)"
+            >
+              <div class="assignee-avatar">
+                {{ (user.name || user.email).slice(0, 1).toUpperCase() }}
               </div>
-            </div>
-          </div>
-          
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Due Date</label>
-              <input 
-                type="date" 
-                class="form-input" 
-                v-model="form.dueDate" 
-              />
-            </div>
-            
-            <div class="form-group">
-              <label class="form-label">Assignees</label>
-
-              <div v-if="isUsersLoading">Loading users...</div>
-
-              <div v-else class="assignees-list">
-                <label v-for="u in users" :key="u._id" class="assignee-row">
-                  <input
-                    type="checkbox"
-                    :checked="form.assignees.includes(u._id)"
-                    @change="toggleAssignee(u._id)"
-                  />
-                  <span>{{ u.name || u.email }}</span>
-                  <small v-if="u.role === 'admin'">(admin)</small>
-                </label>
-              </div>
+              <span class="assignee-name">{{ user.name || user.email }}</span>
+              <span v-if="form.assignees.includes(user._id)" class="check-mark">✓</span>
             </div>
           </div>
         </div>
-      </div>
 
-      <div class="modal-footer">
-        <button class="btn-cancel" @click="closeModal">Cancel</button>
-        <button class="btn-submit" @click="handleSubmit">Create Task</button>
-      </div>
+        <!-- Кнопки действий -->
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" @click="close">Cancel</button>
+          <button type="submit" class="btn btn-primary">{{ submitLabel }}</button>
+        </div>
+      </form>
     </div>
   </div>
 </template>
 
 <script setup>
-import { reactive, ref, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { apiGet } from '../../api.js'
+
+const props = defineProps({
+  task: { type: Object, default: null }, // ← новый проп
+})
 
 const emit = defineEmits(['close', 'submit'])
 
+const categories = ['Not Started', 'In Progress', 'Under Review', 'Completed']
+const priorities = ['low', 'medium', 'high']
 const users = ref([])
-const isUsersLoading = ref(false)
 
 const form = reactive({
   title: '',
   description: '',
-  priority: 'Medium',
+  category: '',
+  priority: 'medium',
   dueDate: '',
   assignees: [],
 })
 
+const isEditing = ref(false)
+
+const modalTitle = computed(() => isEditing.value ? 'Edit Task' : 'Create New Task')
+const submitLabel = computed(() => isEditing.value ? 'Save Changes' : 'Create Task')
+
 onMounted(async () => {
-  isUsersLoading.value = true
   try {
-    users.value = await apiGet('/api/users')
-  } finally {
-    isUsersLoading.value = false
+    const response = await apiGet('/api/users')
+    users.value = response.users || response || []
+  } catch (err) {
+    console.error('Failed to load users:', err)
   }
 })
 
+watch(
+  () => props.task,
+  (newTask) => {
+    if (newTask) {
+      isEditing.value = true
+      form.title = newTask.title || ''
+      form.description = newTask.description || ''
+      form.priority = newTask.priority || 'medium'
+      form.dueDate = newTask.dueDate
+        ? newTask.dueDate.slice(0, 10) 
+        : ''
+      const statusToCategory = {
+        'not-started': 'Not Started',
+        'in-progress': 'In Progress',
+        'under-review': 'Under Review',
+        'completed': 'Completed',
+      }
+      form.category = statusToCategory[newTask.status] || 'Not Started'
+      form.assignees = (newTask.assignees || []).map(
+        u => (typeof u === 'object' ? u._id : u)
+      )
+    } else {
+      isEditing.value = false
+    }
+  },
+  { immediate: true }
+)
+
 function toggleAssignee(userId) {
-  const i = form.assignees.indexOf(userId)
-  if (i === -1) form.assignees.push(userId)
-  else form.assignees.splice(i, 1)
+  if (!userId) return
+  
+  const index = form.assignees.indexOf(userId)
+  if (index === -1) {
+    form.assignees.push(userId)
+  } else {
+    form.assignees.splice(index, 1)
+  }
 }
 
-const handleSubmit = () => {
-  emit('submit', { ...form })
+function close() {
+  emit('close')
+}
+
+function handleSubmit() {
+  if (!form.title.trim()) {
+    alert('Please enter a task title')
+    return
+  }
+  if (!form.category) {
+    alert('Please select a category')
+    return
+  }
+
+  emit('submit', {
+    ...form,
+    _id: props.task?._id,
+    isEditing: isEditing.value,
+  })
 }
 </script>
 
 <style scoped>
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   padding: 20px;
-  animation: fadeIn 0.2s ease;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.modal-container {
-  background: white;
+.modal-content {
+  background: #ffffff;
   border-radius: 12px;
+  max-width: 600px;
   width: 100%;
-  max-width: 640px;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  animation: slideUp 0.3s ease;
-}
-
-@keyframes slideUp {
-  from { 
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to { 
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .modal-header {
-  padding: 32px 32px 24px;
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
 }
 
-.modal-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: #111827;
-  margin-bottom: 8px;
-}
-
-.modal-subtitle {
-  font-size: 14px;
-  color: #6b7280;
-}
-
-.modal-close {
-  width: 36px;
-  height: 36px;
+.close-btn {
+  background: none;
   border: none;
-  background: #f3f4f6;
-  border-radius: 8px;
   color: #6b7280;
+  font-size: 24px;
   cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  border-radius: 6px;
+  transition: all 0.2s;
 }
 
-.modal-close:hover {
-  background: #e5e7eb;
-  color: #111827;
+.close-btn:hover {
+  background: #f3f4f6;
+  color: #1f2937;
 }
 
 .modal-body {
-  padding: 0 32px 32px;
-}
-
-.form-section {
-  margin-bottom: 32px;
-}
-
-.section-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #111827;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.section-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.bg-orange {
-  background-color: #fff7ed;
-  color: #ff6b00;
-}
-
-.bg-blue {
-  background-color: #eff6ff;
-  color: #3b82f6;
+  padding: 24px;
 }
 
 .form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
   margin-bottom: 20px;
 }
 
 .form-label {
-  font-size: 13px;
-  font-weight: 600;
+  display: block;
   color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
 }
 
 .form-input {
   width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #e5e7eb;
+  padding: 10px 12px;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
   border-radius: 8px;
+  color: #1f2937;
   font-size: 14px;
-  color: #111827;
-  background-color: #f9fafb;
-  transition: all 0.2s ease;
-  font-family: inherit;
+  transition: all 0.2s;
 }
 
 .form-input:focus {
   outline: none;
-  border-color: #ff6b00;
-  background-color: white;
-  box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.1);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.textarea {
+.form-input::placeholder {
+  color: #9ca3af;
+}
+
+textarea.form-input {
   resize: vertical;
-  min-height: 100px;
+  min-height: 80px;
 }
 
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
+select.form-input {
+  cursor: pointer;
 }
 
-.priority-group {
+.priority-buttons {
   display: flex;
-  background-color: #f3f4f6;
-  border-radius: 8px;
-  padding: 4px;
+  gap: 8px;
 }
 
 .priority-btn {
   flex: 1;
-  padding: 8px 0;
-  border: none;
-  background: transparent;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
   color: #6b7280;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 500;
+  text-transform: capitalize;
+  transition: all 0.2s;
+}
+
+.priority-btn:hover {
+  border-color: #9ca3af;
+  background: #f9fafb;
 }
 
 .priority-btn.active {
-  background-color: white;
-  color: #ff6b00;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  font-weight: 600;
+  border-width: 2px;
 }
 
-.assignees-group {
+.priority-btn.low.active {
+  border-color: #10b981;
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.priority-btn.medium.active {
+  border-color: #f59e0b;
+  background: #fffbeb;
+  color: #d97706;
+}
+
+.priority-btn.high.active {
+  border-color: #ef4444;
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.assignees-list {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.assignee-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-.avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 2px solid white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.add-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 1px dashed #d1d5db;
-  background: #f9fafb;
-  color: #9ca3af;
+  gap: 12px;
+  padding: 10px 12px;
   cursor: pointer;
+  transition: background 0.2s;
+}
+
+.assignee-item:hover {
+  background: #f9fafb;
+}
+
+.assignee-item.selected {
+  background: #eff6ff;
+}
+
+.assignee-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #3b82f6;
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 600;
 }
 
-.add-avatar:hover {
-  border-color: #ff6b00;
-  color: #ff6b00;
-  background-color: #fff7ed;
+.assignee-name {
+  flex: 1;
+  color: #374151;
+  font-size: 14px;
+}
+
+.check-mark {
+  color: #10b981;
+  font-size: 18px;
+  font-weight: bold;
 }
 
 .modal-footer {
-  padding: 24px 32px 32px;
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  border-top: 1px solid #f3f4f6;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
 }
 
-.btn-cancel {
-  padding: 12px 24px;
-  background: transparent;
-  color: #6b7280;
-  border: none;
+.btn {
+  padding: 10px 20px;
   border-radius: 8px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-cancel:hover {
-  background-color: #f3f4f6;
-  color: #111827;
-}
-
-.btn-submit {
-  padding: 12px 28px;
-  background-color: #111827;
-  color: white;
+  transition: all 0.2s;
   border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
 }
 
-.btn-submit:hover {
-  background-color: #1f2937;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+.btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
 }
 
-@media (max-width: 640px) {
-  .modal-header,
-  .modal-body,
-  .modal-footer {
-    padding-left: 24px;
-    padding-right: 24px;
-  }
-  
-  .form-row {
-    grid-template-columns: 1fr;
-  }
+.btn-secondary:hover {
+  background: #e5e7eb;
+}
+
+.btn-primary {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: #2563eb;
 }
 </style>
