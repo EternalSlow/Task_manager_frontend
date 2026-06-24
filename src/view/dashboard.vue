@@ -36,7 +36,6 @@
 import { ref } from 'vue'
 import Sidebar from './components/Sidebar.vue'
 import TopHeader from './components/TopHeader.vue'
-import FoldersGrid from './components/FoldersGrid.vue'
 import ViewControls from './components/ViewControls.vue'
 import KanbanBoard from './components/KanbanBoard.vue'
 import CreateTaskModal from './components/CreateTaskModal.vue'
@@ -84,8 +83,6 @@ onMounted(async () => {
   loadError.value = ''
 
   try {
-    const foldersData = await apiGet('/api/folders')
-    folders.value = foldersData
 
     const tasks = await apiGet('/api/kanban-tasks')
 
@@ -101,16 +98,7 @@ onMounted(async () => {
   }
 })
 
-const handleEditFolder = (folderData) => {
-  alert(`Edit folder: ${folderData.name}`)
-}
 
-const handleDeleteFolder = (folderData) => {
-  if (confirm(`Delete folder "${folderData.name}"?`)) {
-    const index = folders.value.findIndex(f => f.name === folderData.name)
-    if (index !== -1) folders.value.splice(index, 1)
-  }
-}
 
 const handleEditColumn = (column) => {
   alert(`Edit column: ${column.title}`)
@@ -121,10 +109,6 @@ const handleDeleteColumn = (column) => {
     const index = columns.value.findIndex(c => c.id === column.id)
     if (index !== -1) columns.value.splice(index, 1)
   }
-}
-
-const handleAddFolder = () => {
-  alert('Открытие диалога создания папки')
 }
 
 const handleCreateTask = () => {
