@@ -1,12 +1,9 @@
 <template>
   <div class="task-card bg-gray-800 rounded-xl p-4 mb-3 cursor-pointer">
 
-    <!-- Заголовок -->
     <h3 class="text-white font-semibold text-sm">{{ task.title }}</h3>
 
-    <!-- Заметка (description): показ / редактирование -->
     <div class="mt-2">
-      <!-- Режим просмотра -->
       <div v-if="!isEditingDescription" class="group">
         <p
           class="text-gray-400 text-xs min-h-[20px] cursor-pointer
@@ -17,7 +14,6 @@
         </p>
       </div>
 
-      <!-- Режим редактирования -->
       <div v-else>
         <textarea
           ref="descriptionTextarea"
@@ -51,11 +47,9 @@
       </div>
     </div>
 
-    <!-- Прогресс -->
     <div class="task-progress">
       <span class="task-progress-label">Progress</span>
       <div class="progress-bar">
-        <!-- ❌ БЫЛО: v-for="task in col.tasks" с рекурсивным <TaskCard> — УДАЛЕНО -->
         <div
           class="progress-fill"
           :class="task.priority"
@@ -65,16 +59,24 @@
       <span class="progress-text">{{ task.progress }}/{{ task.total }}</span>
     </div>
 
-    <!-- ✅ БЫЛО: task.due — ИСПРАВЛЕНО на task.dueDate -->
     <div class="task-due">📅 Due to: {{ task.dueDate }}</div>
 
-    <!-- Футер -->
     <div class="task-footer">
       <div class="avatars">
-        <!-- ❌ БЫЛО: v-for="task in col.tasks" с рекурсивным <TaskCard> — УДАЛЕНО -->
         <div
+          v-for="u in (task.assignees || [])"
+          :key="u._id"
+          class="avatar"
+          :title="u.name || u.email"
+        >
+          {{ (u.name || u.email).slice(0, 1).toUpperCase() }}
+        </div>
+
+        <!-- fallback для старых задач, если остались task.avatars -->
+        <div
+          v-if="(!task.assignees || task.assignees.length === 0) && task.avatars?.length"
           v-for="(color, i) in task.avatars"
-          :key="i"
+          :key="'legacy-'+i"
           class="avatar"
           :style="{ background: color }"
         ></div>
@@ -89,9 +91,7 @@
 </template>
 
 <script setup>
-// ✅ Один импорт из vue, только то что реально используется + nextTick добавлен
 import { ref, nextTick } from 'vue'
-// ✅ apiPut импортирован
 import { apiPut } from '../../api.js'
 
 const props = defineProps({

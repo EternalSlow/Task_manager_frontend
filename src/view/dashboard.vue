@@ -142,7 +142,7 @@ const handleTaskSubmit = async (taskData) => {
       total: 5,
       dueDate: taskData.dueDate || '',
       status: 'not-started',
-      avatars: taskData.assignees || [],
+      assignees: taskData.assignees || [],
       comments: 0,
       attachments: 0,
     };

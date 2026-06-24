@@ -101,19 +101,19 @@
             
             <div class="form-group">
               <label class="form-label">Assignees</label>
-              <div class="assignees-group">
-                <div 
-                  v-for="(avatar, idx) in form.assignees" 
-                  :key="idx" 
-                  class="avatar" 
-                  :style="{ backgroundColor: avatar }"
-                ></div>
-                <button class="add-avatar" @click="addAssignee">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                  </svg>
-                </button>
+
+              <div v-if="isUsersLoading">Loading users...</div>
+
+              <div v-else class="assignees-list">
+                <label v-for="u in users" :key="u._id" class="assignee-row">
+                  <input
+                    type="checkbox"
+                    :checked="form.assignees.includes(u._id)"
+                    @change="toggleAssignee(u._id)"
+                  />
+                  <span>{{ u.name || u.email }}</span>
+                  <small v-if="u.role === 'admin'">(admin)</small>
+                </label>
               </div>
             </div>
           </div>
@@ -129,37 +129,35 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
+import { apiGet } from '../../api.js'
 
 const emit = defineEmits(['close', 'submit'])
 
-const props = defineProps({
-  columns: {
-    type: Array,
-    required: true,
-    default: () => []
-  }
-})
+const users = ref([])
+const isUsersLoading = ref(false)
 
 const form = reactive({
   title: '',
   description: '',
-  category: 'New Design',
   priority: 'Medium',
   dueDate: '',
-  assignees: ['#3b82f6', '#8b5cf6', '#ec4899']
+  assignees: [],
 })
 
-const priorities = ref(['Low', 'Medium', 'High'])
+onMounted(async () => {
+  isUsersLoading.value = true
+  try {
+    users.value = await apiGet('/api/users')
+  } finally {
+    isUsersLoading.value = false
+  }
+})
 
-const addAssignee = () => {
-  const colors = ['#10b981', '#f97316', '#ef4444', '#f59e0b', '#8b5cf6']
-  const randomColor = colors[Math.floor(Math.random() * colors.length)]
-  form.assignees.push(randomColor)
-}
-
-const closeModal = () => {
-  emit('close')
+function toggleAssignee(userId) {
+  const i = form.assignees.indexOf(userId)
+  if (i === -1) form.assignees.push(userId)
+  else form.assignees.splice(i, 1)
 }
 
 const handleSubmit = () => {
