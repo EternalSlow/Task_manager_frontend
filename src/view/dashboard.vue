@@ -1,5 +1,4 @@
 <template>
-  <!-- ✅ Загрузка и ошибка показываются отдельно -->
   <div v-if="isLoading" class="flex items-center justify-center h-64">
     <span class="text-gray-400 text-lg">Загрузка...</span>
   </div>
@@ -8,7 +7,6 @@
     <span class="text-red-400 text-lg">Ошибка загрузки: {{ loadError }}</span>
   </div>
 
-  <!-- ✅ БЫЛО: без v-else — рендерился всегда. ИСПРАВЛЕНО: v-else -->
   <div v-else class="app">
     <Sidebar @open-tasks="showTaskModal = true" />
     <main class="main">
@@ -39,7 +37,7 @@ import TopHeader from './components/TopHeader.vue'
 import ViewControls from './components/ViewControls.vue'
 import KanbanBoard from './components/KanbanBoard.vue'
 import CreateTaskModal from './components/CreateTaskModal.vue'
-import { apiPost } from '../api.js'
+import { apiPost, apiGet } from '../api.js'
 import { onMounted } from 'vue'
 
 const showTaskModal = ref(false)
@@ -98,8 +96,6 @@ onMounted(async () => {
   }
 })
 
-
-
 const handleEditColumn = (column) => {
   alert(`Edit column: ${column.title}`)
 }
@@ -117,7 +113,6 @@ const handleCreateTask = () => {
 
 const handleEditTask = ({ columnId, task }) => {
   alert(`Edit task: ${task.title}`)
-  // открыть модалку редактирования задачи
 }
 
 const closeTaskModal = () => {
@@ -139,7 +134,6 @@ const handleDeleteTask = ({ columnId, task }) => {
 
 const handleTaskSubmit = async (taskData) => {
   try {
-    // 1) Собираем payload под backend-модель
     const payload = {
       title: taskData.title,
       description: taskData.description || '',        // <-- это и есть “заметка”
@@ -153,10 +147,8 @@ const handleTaskSubmit = async (taskData) => {
       attachments: 0,
     };
 
-    // 2) Сохраняем на сервер
     const saved = await apiPost('/api/kanban-tasks', payload);
 
-    // 3) Кладём в UI то, что вернул сервер (важно: там будет _id)
     columns.value[0].tasks.push(saved);
     columns.value[0].count++;
 

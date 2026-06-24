@@ -4,7 +4,6 @@ export async function apiGet(path) {
   const res = await fetch(`${API_URL}${path}`, {
     headers: {
       'Content-Type': 'application/json',
-      // если используешь JWT:
       'Authorization': `Bearer ${localStorage.getItem('token')}`,
     },
   })
