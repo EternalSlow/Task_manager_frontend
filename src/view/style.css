@@ -19,7 +19,6 @@ body, html {
   padding: 0;
 }
 
-/* Sidebar */
 .sidebar {
   width: 64px;
   background: #fff;
@@ -70,7 +69,6 @@ body, html {
   margin-top: auto;
 }
 
-/* Main */
 .main {
   margin-left: 64px;
   flex: 1;
@@ -78,7 +76,6 @@ body, html {
   flex-direction: column;
 }
 
-/* Top header */
 .top-header {
   background: #fff;
   border-bottom: 1px solid #e5e7eb;
@@ -182,13 +179,11 @@ body, html {
   cursor: pointer;
 }
 
-/* Content */
 .content {
   padding: 24px;
   flex: 1;
 }
 
-/* Folders grid */
 .folders-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -263,7 +258,6 @@ body, html {
   background: #fffaf5;
 }
 
-/* View controls */
 .view-controls {
   display: flex;
   align-items: center;
@@ -316,7 +310,6 @@ body, html {
   background: #334155;
 }
 
-/* Kanban board */
 .kanban-board {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -381,7 +374,6 @@ body, html {
   color: #111;
 }
 
-/* Task card */
 .task-card {
   background: #fff;
   border-radius: 12px;
@@ -504,7 +496,6 @@ body, html {
   gap: 4px;
 }
 
-/* Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }

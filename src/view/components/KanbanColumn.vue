@@ -6,15 +6,12 @@
         {{ column.title }}
         <span class="col-count" :class="column.iconClass">{{ column.count }}</span>
       </div>
-      <!-- Кнопка точек -->
       <div class="dot-menu" @click.stop="toggleMenu">⋮</div>
-      <!-- Выпадающее меню -->
       <div v-if="showMenu" class="dropdown-menu" ref="menuRef">
         <div class="dropdown-item" @click="handleEdit">✏️ Edit</div>
         <div class="dropdown-item" @click="handleDelete">🗑️ Delete</div>
       </div>
     </div>
-    <!-- Список задач -->
     <TaskCard
       v-for="(task, index) in column.tasks"
       :key="index"
@@ -72,7 +69,6 @@ const handleDelete = () => {
   padding: 0 4px;
 }
 .dropdown-menu {
-  /* те же стили, что выше */
   position: absolute;
   right: 0;
   top: 100%;

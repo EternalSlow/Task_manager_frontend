@@ -1,16 +1,5 @@
 <template>
   <div class="view-controls">
-    <div class="view-tabs">
-      <div
-        v-for="view in views"
-        :key="view.name"
-        class="view-tab"
-        :class="{ active: view.name === activeView }"
-        @click="activeView = view.name"
-      >
-        <span v-html="view.icon"></span>
-        {{ view.name }}
-      </div>
     </div>
     <button class="create-btn" @click="$emit('create-task')">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -19,7 +8,6 @@
       </svg>
       Create Task
     </button>
-  </div>
 </template>
 
 <script setup>

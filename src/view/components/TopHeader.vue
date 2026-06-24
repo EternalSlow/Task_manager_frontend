@@ -4,7 +4,7 @@
       <div class="top-header-logo">C</div>
       <div class="top-header-title">Corp Task</div>
       <nav class="nav-tabs">
-        <div
+        <!-- <div
           v-for="tab in tabs"
           :key="tab"
           class="nav-tab"
@@ -12,7 +12,7 @@
           @click="activeTab = tab"
         >
           {{ tab }}
-        </div>
+        </div> -->
       </nav>
     </div>
     <div class="top-header-right">

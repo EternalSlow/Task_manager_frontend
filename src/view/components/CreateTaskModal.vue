@@ -1,4 +1,3 @@
-<!-- components/CreateTaskModal.vue -->
 <template>
   <div class="modal-overlay" @click="closeModal">
     <div class="modal-container" @click.stop>
@@ -16,7 +15,6 @@
       </div>
 
       <div class="modal-body">
-        <!-- General Information -->
         <div class="form-section">
           <h3 class="section-title">
             <span class="section-icon bg-orange">
@@ -51,7 +49,6 @@
           </div>
         </div>
 
-        <!-- Task Properties -->
         <div class="form-section">
           <h3 class="section-title">
             <span class="section-icon bg-blue">
