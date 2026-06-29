@@ -22,5 +22,5 @@ defineProps({
 
 
 
-defineEmits(['update-task','edit-column', 'delete-column', 'edit-task', 'delete-task'])
+const emit = defineEmits(['update-task','edit-column', 'delete-column', 'edit-task', 'delete-task'])
 </script>

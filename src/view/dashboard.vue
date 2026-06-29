@@ -12,15 +12,15 @@
     <main class="main">
       <TopHeader />
       <div class="content">
-        <FoldersGrid :folders="folders" @add-folder="handleAddFolder" />
         <ViewControls @create-task="showTaskModal = true" />
-          <KanbanBoard
-            :columns="columns"
-            @edit-column="handleEditColumn"
-            @delete-column="handleDeleteColumn"
-            @edit-task="handleEditTask"
-            @delete-task="handleDeleteTask"
-          /> 
+        <KanbanBoard
+          :columns="columns"
+          @edit-task="handleEditTask"
+          @delete-task="handleDeleteTask"
+          @update-task="handleTaskUpdate"
+          @edit-column="handleEditColumn"
+          @delete-column="handleDeleteColumn"
+        />
       </div>
     </main>
 
@@ -30,7 +30,12 @@
       @close="showTaskModal = false"
       @submit="handleTaskSubmit"
       :columns="columns"
-    />
+    />  
+    <div v-if="isAdmin" class="admin-panel">
+    <router-link to="/admin/users" class="btn-admin">
+      👥 Admin
+    </router-link>
+  </div>
 
   </div>
 </template>
@@ -43,7 +48,7 @@ import ViewControls from './components/ViewControls.vue'
 import KanbanBoard from './components/KanbanBoard.vue'
 import CreateTaskModal from './components/CreateTaskModal.vue'
 import { apiGet, apiPost, apiPut, apiDelete } from '../api.js'
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
 
 const showTaskModal = ref(false)
 const currentUser = ref(null)
@@ -59,6 +64,8 @@ function handleEditTask({ columnId, task }) {
   showTaskModal.value = true
 }
 
+const user = JSON.parse(localStorage.getItem('user') || '{}')
+const isAdmin = computed(() => user.role === 'admin')
 
 const columns = ref([
   {
@@ -218,4 +225,22 @@ function handleTaskUpdate(updatedTask) {
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
 @import './style.css';
+.admin-panel {
+  margin: 1rem 0;
+}
+
+.btn-admin {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: #2196f3;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.btn-admin:hover {
+  background: #1976d2;
+}
 </style>
